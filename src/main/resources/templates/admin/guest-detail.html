@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Guest')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <a class="small" th:href="@{/admin/guests}">&larr; Guests</a>
+        <h1 class="h3 mb-3" th:text="${guest.fullName}"></h1>
+        <div class="card border-0 shadow-sm mb-4" style="max-width:560px">
+            <table class="table mb-0">
+                <tr><th class="w-50">Phone</th><td th:text="${guest.phone}"></td></tr>
+                <tr><th>Email</th><td th:text="${guest.email} ?: '-'"></td></tr>
+                <tr><th>City</th><td th:text="${guest.city} ?: '-'"></td></tr>
+                <tr><th>ID proof</th><td th:text="${guest.idProofType} != null ? ${guest.idProofType} + ' ' + (${guest.idProofNumber} ?: '') : '-'"></td></tr>
+            </table>
+        </div>
+        <h2 class="h5">Stay history</h2>
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light"><tr><th>Ref</th><th>Room type</th><th>Dates</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="b : ${bookings}">
+                        <td class="small fw-semibold" th:text="${b.bookingCode}"></td>
+                        <td th:text="${b.roomType.name}"></td>
+                        <td class="small" th:text="${#temporals.format(b.checkInDate, 'dd MMM')} + ' → ' + ${#temporals.format(b.checkOutDate, 'dd MMM yyyy')}"></td>
+                        <td><span th:replace="~{fragments/layout :: statusBadge(${b.status})}"></span></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-olive" th:href="@{/admin/bookings/{id}(id=${b.id})}">Open</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

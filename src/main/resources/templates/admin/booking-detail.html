@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Booking ' + ${booking.bookingCode})}"></th:block></head>
+<body>
+<div class="admin-wrap" th:with="st=${booking.status.name()}">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <a class="small" th:href="@{/admin/bookings}">&larr; All bookings</a>
+                <h1 class="h3 mb-0">Booking <span th:text="${booking.bookingCode}"></span>
+                    <span th:replace="~{fragments/layout :: statusBadge(${booking.status})}"></span></h1>
+            </div>
+            <div class="d-flex gap-2">
+                <form th:if="${st == 'PENDING'}" th:action="@{/admin/bookings/{id}/confirm(id=${booking.id})}" method="post">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-check2"></i> Confirm</button>
+                </form>
+                <form th:if="${st == 'PENDING' or st == 'CONFIRMED'}" th:action="@{/admin/bookings/{id}/cancel(id=${booking.id})}" method="post"
+                      onsubmit="return confirm('Cancel this booking?')">
+                    <button class="btn btn-outline-danger" type="submit"><i class="bi bi-x-lg"></i> Cancel booking</button>
+                </form>
+                <a th:if="${invoice}" class="btn btn-olive" th:href="@{/admin/invoices/{id}(id=${invoice.id})}"><i class="bi bi-receipt"></i> View invoice</a>
+            </div>
+        </div>
+        <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white fw-semibold">Stay details</div>
+                    <table class="table mb-0">
+                        <tr><th class="w-50">Room type</th><td th:text="${booking.roomType.name}"></td></tr>
+                        <tr><th>Room</th><td th:text="${booking.room?.roomNumber} ?: 'Not assigned'"></td></tr>
+                        <tr><th>Check-in</th><td th:text="${#temporals.format(booking.checkInDate, 'EEE, dd MMM yyyy')}"></td></tr>
+                        <tr><th>Check-out</th><td th:text="${#temporals.format(booking.checkOutDate, 'EEE, dd MMM yyyy')}"></td></tr>
+                        <tr><th>Nights</th><td th:text="${booking.nights()}"></td></tr>
+                        <tr><th>Guests</th><td th:text="${booking.adults} + ' adult(s), ' + ${booking.children} + ' child(ren)'"></td></tr>
+                        <tr><th>Rate / night</th><td th:text="'₹' + ${#numbers.formatDecimal(booking.nightlyRate, 1, 'COMMA', 2, 'POINT')}"></td></tr>
+                        <tr><th>Source</th><td th:text="${#strings.replace(booking.source.name(), '_', ' ')}"></td></tr>
+                        <tr th:if="${booking.actualCheckIn}"><th>Checked in at</th><td th:text="${#temporals.format(booking.actualCheckIn, 'dd MMM yyyy, hh:mm a')}"></td></tr>
+                        <tr th:if="${booking.actualCheckOut}"><th>Checked out at</th><td th:text="${#temporals.format(booking.actualCheckOut, 'dd MMM yyyy, hh:mm a')}"></td></tr>
+                        <tr th:if="${booking.specialRequests}"><th>Special requests</th><td th:text="${booking.specialRequests}"></td></tr>
+                    </table>
+                </div>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-semibold d-flex justify-content-between">
+                        <span>Guest</span>
+                        <a class="small" th:href="@{/admin/guests/{id}(id=${booking.guest.id})}">History</a>
+                    </div>
+                    <table class="table mb-0">
+                        <tr><th class="w-50">Name</th><td th:text="${booking.guest.fullName}"></td></tr>
+                        <tr><th>Phone</th><td><a th:href="'tel:' + ${booking.guest.phone}" th:text="${booking.guest.phone}"></a></td></tr>
+                        <tr th:if="${booking.guest.email}"><th>Email</th><td th:text="${booking.guest.email}"></td></tr>
+                        <tr th:if="${booking.guest.city}"><th>City</th><td th:text="${booking.guest.city}"></td></tr>
+                        <tr th:if="${booking.guest.idProofType}"><th>ID proof</th>
+                            <td th:text="${booking.guest.idProofType} + ' ' + (${booking.guest.idProofNumber} ?: '')"></td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <!-- Check-in -->
+                <div class="card border-0 shadow-sm mb-4" th:if="${st == 'PENDING' or st == 'CONFIRMED'}">
+                    <div class="card-header bg-white fw-semibold"><i class="bi bi-box-arrow-in-right text-success"></i> Check in</div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(assignableRooms)}" class="alert alert-warning mb-0">
+                            No clean, free <span th:text="${booking.roomType.name}"></span> rooms right now. Mark a room as clean on the
+                            <a th:href="@{/admin/rooms}">Rooms</a> page.
+                        </div>
+                        <form th:unless="${#lists.isEmpty(assignableRooms)}" th:action="@{/admin/bookings/{id}/checkin(id=${booking.id})}" method="post" class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label" for="roomId">Assign room</label>
+                                <select class="form-select" id="roomId" name="roomId" required>
+                                    <option th:each="r : ${assignableRooms}" th:value="${r.id}" th:text="'Room ' + ${r.roomNumber} + (${r.floor} != null ? ' (floor ' + ${r.floor} + ')' : '')"></option>
+                                </select>
+                            </div>
+                            <div class="col-sm-5">
+                                <label class="form-label" for="idProofType">ID proof type</label>
+                                <select class="form-select" id="idProofType" name="idProofType">
+                                    <option>Aadhaar</option><option>Passport</option><option>Driving Licence</option>
+                                    <option>Voter ID</option><option>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-7">
+                                <label class="form-label" for="idProofNumber">ID number</label>
+                                <input class="form-control" id="idProofNumber" name="idProofNumber" autocomplete="off">
+                            </div>
+                            <div class="col-12"><button class="btn btn-success" type="submit">Check in guest</button></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Charges + check-out -->
+                <div class="card border-0 shadow-sm mb-4" th:if="${st == 'CHECKED_IN' or st == 'CHECKED_OUT'}">
+                    <div class="card-header bg-white fw-semibold"><i class="bi bi-cash-stack"></i> Bill</div>
+                    <table class="table mb-0 align-middle">
+                        <tr>
+                            <td th:text="'Room charges (' + ${booking.nights()} + ' night(s) × ₹' + ${#numbers.formatDecimal(booking.nightlyRate, 1, 'COMMA', 2, 'POINT')} + ')'"></td>
+                            <td class="text-end" th:text="'₹' + ${#numbers.formatDecimal(booking.roomCharges(), 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td></td>
+                        </tr>
+                        <tr th:each="c : ${booking.extraCharges}">
+                            <td th:text="${c.description}"></td>
+                            <td class="text-end" th:text="'₹' + ${#numbers.formatDecimal(c.amount, 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td class="text-end" style="width:1%">
+                                <form th:if="${st == 'CHECKED_IN'}" th:action="@{/admin/bookings/{id}/charges/{cid}/delete(id=${booking.id}, cid=${c.id})}" method="post">
+                                    <button class="btn btn-sm btn-link text-danger p-0" type="submit" title="Remove"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="fw-semibold">
+                            <td>Subtotal (before tax)</td>
+                            <td class="text-end" th:text="'₹' + ${#numbers.formatDecimal(booking.roomCharges().add(booking.extraChargesTotal()), 1, 'COMMA', 2, 'POINT')}"></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    <div class="card-body border-top" th:if="${st == 'CHECKED_IN'}">
+                        <form th:action="@{/admin/bookings/{id}/charges(id=${booking.id})}" method="post" class="row g-2 mb-4">
+                            <div class="col-sm-6"><input class="form-control" name="description" placeholder="e.g. Breakfast, Laundry" list="chargeTypes" required></div>
+                            <datalist id="chargeTypes">
+                                <option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Room service</option>
+                                <option>Laundry</option><option>Extra bed</option><option>Late check-out</option>
+                            </datalist>
+                            <div class="col-sm-3"><input class="form-control" name="amount" type="number" step="0.01" min="0.01" placeholder="Amount" required></div>
+                            <div class="col-sm-3"><button class="btn btn-outline-olive w-100" type="submit">Add charge</button></div>
+                        </form>
+                        <h6>Check out &amp; generate invoice</h6>
+                        <form th:action="@{/admin/bookings/{id}/checkout(id=${booking.id})}" method="post" class="row g-2"
+                              onsubmit="return confirm('Check out this guest and generate the final invoice?')">
+                            <div class="col-sm-4">
+                                <label class="form-label small" for="discount">Discount (₹)</label>
+                                <input class="form-control" id="discount" name="discount" type="number" step="0.01" min="0" value="0">
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small" for="paymentMethod">Payment</label>
+                                <select class="form-select" id="paymentMethod" name="paymentMethod">
+                                    <option>Cash</option><option>UPI</option><option>Card</option><option>Bank transfer</option><option>Bill to company</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4 d-flex align-items-end"><button class="btn btn-danger w-100" type="submit">Check out</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

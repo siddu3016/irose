@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Rooms')}"></th:block></head>
+<body>
+<nav th:replace="~{fragments/layout :: publicNav}"></nav>
+
+<div class="bg-olive text-white py-4">
+    <div class="container">
+        <h1 class="h3 mb-3">Rooms &amp; availability</h1>
+        <form class="row g-2 align-items-end" th:action="@{/rooms}" method="get">
+            <div class="col-sm-4">
+                <label class="form-label small" for="checkIn">Check-in</label>
+                <input class="form-control" type="date" id="checkIn" name="checkIn" th:value="${checkIn}" th:min="${today}" required>
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label small" for="checkOut">Check-out</label>
+                <input class="form-control" type="date" id="checkOut" name="checkOut" th:value="${checkOut}" th:min="${today}" required>
+            </div>
+            <div class="col-sm-4"><button class="btn btn-warning w-100 fw-semibold" type="submit">Update</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden" th:each="entry : ${availability}" th:with="t=${entry.key}, free=${entry.value}">
+        <div class="row g-0">
+            <div class="col-md-4 position-relative">
+                <span class="offer-ribbon" th:if="${t.hasOffer()}" th:text="${t.discountPercent()} + '% OFF · Special offer'"></span>
+                <img th:src="@{/images/rooms/{f}(f=${t.imageFile ?: 'none.jpg'})}" onerror="this.onerror=null;this.src='/images/placeholder.svg'"
+                     class="w-100 h-100" style="object-fit:cover;min-height:220px" th:alt="${t.name}">
+            </div>
+            <div class="col-md-8">
+                <div class="card-body p-4 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <h4 th:text="${t.name}">Room</h4>
+                        <span th:if="${free > 0}" class="badge text-bg-success align-self-start" th:text="${free} + ' available'"></span>
+                        <span th:unless="${free > 0}" class="badge text-bg-danger align-self-start">Sold out</span>
+                    </div>
+                    <p class="small text-muted">
+                        <i class="bi bi-people"></i> Up to <span th:text="${t.maxGuests}"></span> guests
+                        <span th:if="${t.bedType}"> · <span th:text="${t.bedType}"></span></span>
+                        <span th:if="${t.sizeSqft}"> · <span th:text="${t.sizeSqft}"></span> sq.ft</span>
+                    </p>
+                    <p th:text="${t.description}"></p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge rounded-pill bg-olive-light text-olive" th:each="a : ${t.amenityList()}" th:text="${a}"></span>
+                    </div>
+                    <div class="mt-auto d-flex justify-content-between align-items-end">
+                        <div th:replace="~{fragments/layout :: roomPrice(${t}, '/ night + taxes')}"></div>
+                        <a th:if="${free > 0}" class="btn btn-olive"
+                           th:href="@{/book(roomTypeId=${t.id}, checkIn=${checkIn}, checkOut=${checkOut})}">Book now</a>
+                        <a th:unless="${free > 0}" class="btn btn-outline-olive" th:href="'tel:+' + ${hotel.whatsappNumber()}">Call us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: publicFooter}"></th:block>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Room Types')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h1 class="h3 mb-0">Room types &amp; rates</h1>
+            <a class="btn btn-olive" th:href="@{/admin/room-types/new}"><i class="bi bi-plus-lg"></i> Add room type</a>
+        </div>
+        <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light"><tr><th>Name</th><th>Price / night</th><th>Max guests</th><th>Bed</th><th>Size</th><th>Photo file</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="t : ${roomTypes}">
+                        <td class="fw-semibold" th:text="${t.name}"></td>
+                        <td>
+                            <span th:if="${t.hasOffer()}" class="old-price small" th:text="'₹' + ${#numbers.formatDecimal(t.originalPrice, 1, 'COMMA', 0, 'POINT')}"></span>
+                            <span th:text="'₹' + ${#numbers.formatDecimal(t.pricePerNight, 1, 'COMMA', 2, 'POINT')}"></span>
+                            <span th:if="${t.hasOffer()}" class="badge offer-badge" th:text="${t.discountPercent()} + '% OFF'"></span>
+                        </td>
+                        <td th:text="${t.maxGuests}"></td>
+                        <td th:text="${t.bedType}"></td>
+                        <td th:text="${t.sizeSqft} != null ? ${t.sizeSqft} + ' sq.ft' : ''"></td>
+                        <td class="small text-muted" th:text="${t.imageFile}"></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-olive" th:href="@{/admin/room-types/{id}(id=${t.id})}">Edit</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

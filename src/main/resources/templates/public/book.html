@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Book a Room')}"></th:block></head>
+<body>
+<nav th:replace="~{fragments/layout :: publicNav}"></nav>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <div class="col-lg-7">
+            <h1 class="h3 section-title mb-4">Book your stay</h1>
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+            <form th:action="@{/book}" th:object="${bookingForm}" method="post" class="card card-body border-0 shadow-sm p-4">
+                <th:block th:replace="~{fragments/booking-fields :: fields}"></th:block>
+                <button class="btn btn-olive btn-lg mt-4" type="submit">Send booking request</button>
+                <p class="small text-muted mt-2 mb-0">No payment needed now. Our team will call you to confirm, and you pay at the hotel.</p>
+            </form>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 bg-olive-light p-4">
+                <h5>Prefer to talk?</h5>
+                <p class="mb-3">Call or WhatsApp us and we will book it for you.</p>
+                <a class="btn btn-olive mb-2" th:href="'tel:+' + ${hotel.whatsappNumber()}"><i class="bi bi-telephone-fill"></i> Call <span th:text="${hotel.phone}"></span></a>
+                <a class="btn btn-success" th:href="'https://wa.me/' + ${hotel.whatsappNumber()}" target="_blank" rel="noopener"><i class="bi bi-whatsapp"></i> WhatsApp</a>
+                <hr>
+                <p class="small mb-1"><strong>Check-in:</strong> <span th:text="${hotel.checkInTime}"></span></p>
+                <p class="small mb-1"><strong>Check-out:</strong> <span th:text="${hotel.checkOutTime}"></span></p>
+                <p class="small mb-0">A valid government photo ID is required at check-in for every adult guest.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: publicFooter}"></th:block>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

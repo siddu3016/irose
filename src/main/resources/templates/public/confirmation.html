@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Booking Received')}"></th:block></head>
+<body>
+<nav th:replace="~{fragments/layout :: publicNav}"></nav>
+
+<div class="container py-5" style="max-width:720px">
+    <div class="card border-0 shadow-sm p-4 text-center">
+        <i class="bi bi-check-circle-fill text-olive" style="font-size:3.5rem"></i>
+        <h1 class="h3 mt-3">Thank you, <span th:text="${booking.guest.fullName}"></span>!</h1>
+        <p class="lead" th:if="${booking.status.name() == 'PENDING'}">We have received your booking request. Our team will call you shortly to confirm.</p>
+        <p class="lead" th:unless="${booking.status.name() == 'PENDING'}">Booking status: <th:block th:replace="~{fragments/layout :: statusBadge(${booking.status})}"></th:block></p>
+        <div class="bg-olive-light rounded-3 p-3 my-3">
+            <div class="small text-muted">Booking reference</div>
+            <div class="h4 mb-0 fw-bold" th:text="${booking.bookingCode}"></div>
+        </div>
+        <table class="table text-start mb-4">
+            <tr><th>Room</th><td th:text="${booking.roomType.name}"></td></tr>
+            <tr><th>Check-in</th><td th:text="${#temporals.format(booking.checkInDate, 'EEE, dd MMM yyyy')} + ' (from ' + ${hotel.checkInTime} + ')'"></td></tr>
+            <tr><th>Check-out</th><td th:text="${#temporals.format(booking.checkOutDate, 'EEE, dd MMM yyyy')} + ' (by ' + ${hotel.checkOutTime} + ')'"></td></tr>
+            <tr><th>Guests</th><td th:text="${booking.adults} + ' adult(s)' + (${booking.children > 0} ? ', ' + ${booking.children} + ' child(ren)' : '')"></td></tr>
+            <tr><th>Estimated room charges</th>
+                <td><span th:text="'₹' + ${#numbers.formatDecimal(booking.roomCharges(), 1, 'COMMA', 2, 'POINT')}"></span>
+                    <span class="small text-muted">(<span th:text="${booking.nights()}"></span> night(s), taxes extra)</span></td></tr>
+        </table>
+        <p class="mb-0">Questions? Call <a th:href="'tel:+' + ${hotel.whatsappNumber()}" th:text="${hotel.phone}"></a>
+            and quote your booking reference.</p>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: publicFooter}"></th:block>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

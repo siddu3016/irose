@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Bookings')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h1 class="h3 mb-0">Bookings</h1>
+            <a class="btn btn-olive" th:href="@{/admin/bookings/new}"><i class="bi bi-plus-lg"></i> New booking</a>
+        </div>
+        <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <a class="btn btn-sm" th:classappend="${selectedStatus == null} ? 'btn-olive' : 'btn-outline-olive'" th:href="@{/admin/bookings}">All</a>
+            <a class="btn btn-sm" th:each="s : ${statuses}"
+               th:classappend="${selectedStatus == s} ? 'btn-olive' : 'btn-outline-olive'"
+               th:href="@{/admin/bookings(status=${s})}" th:text="${#strings.replace(s.name(), '_', ' ')}"></a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                    <tr><th>Ref</th><th>Guest</th><th>Room type</th><th>Room</th><th>Dates</th><th>Source</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="b : ${bookings}">
+                        <td class="fw-semibold small" th:text="${b.bookingCode}"></td>
+                        <td><div th:text="${b.guest.fullName}"></div><div class="small text-muted" th:text="${b.guest.phone}"></div></td>
+                        <td th:text="${b.roomType.name}"></td>
+                        <td th:text="${b.room?.roomNumber} ?: '-'"></td>
+                        <td class="small" th:text="${#temporals.format(b.checkInDate, 'dd MMM')} + ' → ' + ${#temporals.format(b.checkOutDate, 'dd MMM yyyy')}"></td>
+                        <td class="small" th:text="${#strings.replace(b.source.name(), '_', ' ')}"></td>
+                        <td><span th:replace="~{fragments/layout :: statusBadge(${b.status})}"></span></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-olive" th:href="@{/admin/bookings/{id}(id=${b.id})}">Open</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(bookings)}"><td colspan="8" class="text-muted small">No bookings found.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

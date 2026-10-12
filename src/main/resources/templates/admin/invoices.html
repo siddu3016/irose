@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Invoices')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <h1 class="h3 mb-3">Invoices</h1>
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light"><tr><th>Invoice</th><th>Date</th><th>Guest</th><th>Room</th><th>Payment</th><th class="text-end">Total</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="i : ${invoices}">
+                        <td class="fw-semibold" th:text="${i.invoiceNumber}"></td>
+                        <td class="small" th:text="${#temporals.format(i.issuedAt, 'dd MMM yyyy')}"></td>
+                        <td th:text="${i.booking.guest.fullName}"></td>
+                        <td th:text="${i.booking.room?.roomNumber}"></td>
+                        <td th:text="${i.paymentMethod}"></td>
+                        <td class="text-end" th:text="'₹' + ${#numbers.formatDecimal(i.total, 1, 'COMMA', 2, 'POINT')}"></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-olive" th:href="@{/admin/invoices/{id}(id=${i.id})}">View</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(invoices)}"><td colspan="7" class="text-muted small">No invoices yet. Invoices are created when a guest checks out.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Welcome')}"></th:block></head>
+<body>
+<nav th:replace="~{fragments/layout :: publicNav}"></nav>
+
+<header class="hero">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="text-uppercase small fw-semibold text-gold mb-2">Business Hotel · Hyderabad</p>
+                <h1 class="display-4 mb-3">Welcome to <span th:text="${hotel.name}">Hotel</span></h1>
+                <p class="lead mb-4">Clean, comfortable rooms with free Wi-Fi, 24-hour front desk and warm hospitality,
+                    for work trips and family stays alike.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a th:href="@{/rooms}" class="btn btn-warning btn-lg fw-semibold">View Rooms</a>
+                    <a th:href="'tel:+' + ${hotel.whatsappNumber()}" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-telephone-fill"></i> <span th:text="${hotel.phone}"></span></a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <form class="search-card shadow p-4" th:action="@{/rooms}" method="get">
+                    <h5 class="mb-3">Check availability</h5>
+                    <div class="mb-3">
+                        <label class="form-label small" for="checkIn">Check-in</label>
+                        <input class="form-control" type="date" id="checkIn" name="checkIn" th:value="${today}" th:min="${today}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small" for="checkOut">Check-out</label>
+                        <input class="form-control" type="date" id="checkOut" name="checkOut" th:value="${tomorrow}" th:min="${tomorrow}" required>
+                    </div>
+                    <button class="btn btn-olive w-100" type="submit"><i class="bi bi-search"></i> Search Rooms</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h2 class="section-title mb-3">About the hotel</h2>
+                <p th:text="${hotel.name} + ' is a business hotel in Hyderabad offering well-kept rooms at fair prices. Whether you are in town for meetings or visiting family, our team makes sure your stay is easy and comfortable.'"></p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-olive me-2"></i>24-hour front desk</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-olive me-2"></i>Check-in <span th:text="${hotel.checkInTime}"></span> · Check-out <span th:text="${hotel.checkOutTime}"></span></li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-olive me-2"></i>Easy booking by phone, WhatsApp or online</li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <img th:src="@{/images/about.jpg}" onerror="this.onerror=null;this.src='/images/placeholder.svg'"
+                     class="img-fluid rounded-4 shadow-sm w-100" style="max-height:360px;object-fit:cover" alt="Hotel exterior">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-olive-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Our Rooms</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4" th:each="t : ${roomTypes}">
+                <div class="card room-card h-100 border-0 shadow-sm overflow-hidden position-relative">
+                    <span class="offer-ribbon" th:if="${t.hasOffer()}" th:text="${t.discountPercent()} + '% OFF · Special offer'"></span>
+                    <img th:src="@{/images/rooms/{f}(f=${t.imageFile ?: 'none.jpg'})}" onerror="this.onerror=null;this.src='/images/placeholder.svg'"
+                         class="card-img-top" th:alt="${t.name}">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" th:text="${t.name}">Room</h5>
+                        <p class="small text-muted mb-2">
+                            <i class="bi bi-people"></i> Up to <span th:text="${t.maxGuests}"></span> guests
+                            <span th:if="${t.bedType}"> · <i class="bi bi-moon"></i> <span th:text="${t.bedType}"></span></span>
+                            <span th:if="${t.sizeSqft}"> · <span th:text="${t.sizeSqft}"></span> sq.ft</span>
+                        </p>
+                        <p class="card-text small" th:text="${t.description}"></p>
+                        <div class="mt-auto d-flex justify-content-between align-items-end">
+                            <div th:replace="~{fragments/layout :: roomPrice(${t}, '/ night')}"></div>
+                            <a class="btn btn-olive" th:href="@{/book(roomTypeId=${t.id})}">Book</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="amenities">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Amenities</h2>
+        <div class="row g-4">
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-snow"></i><span>Air conditioning</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-wifi"></i><span>Wi-Fi</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-tv"></i><span>TV</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-clock-history"></i><span>24-hour front desk</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-droplet"></i><span>Attached bathroom</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-door-closed"></i><span>Closet</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-person-workspace"></i><span>Chair</span></div></div>
+            <div class="col-6 col-md-4"><div class="amenity"><i class="bi bi-cup-straw"></i><span>Mineral water <small class="text-muted">(extra charge)</small></span></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-olive-light" id="gallery">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">Gallery</h2>
+        <div class="row g-3 gallery">
+            <div class="col-6 col-md-4" th:each="i : ${#numbers.sequence(1, 6)}">
+                <img th:src="@{/images/gallery/{n}.jpg(n=${i})}" onerror="this.onerror=null;this.src='/images/placeholder.svg'"
+                     th:alt="'Hotel photo ' + ${i}">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5" id="contact">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-5">
+                <h2 class="section-title mb-4">Contact us</h2>
+                <p><i class="bi bi-geo-alt-fill text-olive me-2"></i><span th:text="${hotel.address}"></span></p>
+                <p><i class="bi bi-telephone-fill text-olive me-2"></i>
+                    <a th:href="'tel:+' + ${hotel.whatsappNumber()}" th:text="${hotel.phone}"></a></p>
+                <p><i class="bi bi-whatsapp text-olive me-2"></i>
+                    <a th:href="'https://wa.me/' + ${hotel.whatsappNumber()}" target="_blank" rel="noopener">Chat on WhatsApp</a></p>
+                <p><i class="bi bi-envelope-fill text-olive me-2"></i>
+                    <a th:href="'mailto:' + ${hotel.email}" th:text="${hotel.email}"></a></p>
+                <a th:href="@{/book}" class="btn btn-olive btn-lg mt-2">Book your stay</a>
+            </div>
+            <div class="col-lg-7">
+                <iframe class="w-100 rounded-4 border" style="height:340px" loading="lazy"
+                        th:src="'https://maps.google.com/maps?q=' + ${#uris.escapeQueryParam(hotel.name + ', ' + hotel.address)} + '&output=embed'"
+                        title="Map"></iframe>
+            </div>
+        </div>
+    </div>
+</section>
+
+<th:block th:replace="~{fragments/layout :: publicFooter}"></th:block>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

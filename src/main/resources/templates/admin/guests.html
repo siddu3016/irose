@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Guests')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <h1 class="h3 mb-3">Guests</h1>
+        <form class="d-flex gap-2 mb-3" th:action="@{/admin/guests}" method="get" style="max-width:480px">
+            <input class="form-control" name="q" th:value="${q}" placeholder="Search by name or phone">
+            <button class="btn btn-olive" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light"><tr><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="g : ${guests}">
+                        <td class="fw-semibold" th:text="${g.fullName}"></td>
+                        <td th:text="${g.phone}"></td>
+                        <td th:text="${g.email}"></td>
+                        <td th:text="${g.city}"></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-olive" th:href="@{/admin/guests/{id}(id=${g.id})}">View</a></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(guests)}"><td colspan="5" class="text-muted small">No guests found.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Booking form fields shared by the public booking page and the front-desk booking page.
+     Must be used inside a form with th:object="${bookingForm}". -->
+<th:block th:fragment="fields">
+    <div class="row g-3">
+        <div class="col-12">
+            <label class="form-label" for="roomTypeId">Room type</label>
+            <select class="form-select" id="roomTypeId" th:field="*{roomTypeId}" th:errorclass="is-invalid" required>
+                <option value="">Select a room</option>
+                <option th:each="t : ${roomTypes}" th:value="${t.id}"
+                        th:text="${t.name} + ' - ₹' + ${#numbers.formatDecimal(t.pricePerNight, 1, 'COMMA', 0, 'POINT')} + '/night (max ' + ${t.maxGuests} + ' guests)'"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{roomTypeId}"></div>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="checkInDate">Check-in</label>
+            <input class="form-control" type="date" id="checkInDate" th:field="*{checkInDate}" th:min="${today}" th:errorclass="is-invalid" required>
+            <div class="invalid-feedback" th:errors="*{checkInDate}"></div>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="checkOutDate">Check-out</label>
+            <input class="form-control" type="date" id="checkOutDate" th:field="*{checkOutDate}" th:min="${today}" th:errorclass="is-invalid" required>
+            <div class="invalid-feedback" th:errors="*{checkOutDate}"></div>
+        </div>
+        <div class="col-6">
+            <label class="form-label" for="adults">Adults</label>
+            <input class="form-control" type="number" min="1" max="6" id="adults" th:field="*{adults}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{adults}"></div>
+        </div>
+        <div class="col-6">
+            <label class="form-label" for="children">Children</label>
+            <input class="form-control" type="number" min="0" max="6" id="children" th:field="*{children}">
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="fullName">Full name</label>
+            <input class="form-control" id="fullName" th:field="*{fullName}" th:errorclass="is-invalid" required>
+            <div class="invalid-feedback" th:errors="*{fullName}"></div>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="phone">Mobile number</label>
+            <input class="form-control" type="tel" id="phone" th:field="*{phone}" th:errorclass="is-invalid" required>
+            <div class="invalid-feedback" th:errors="*{phone}"></div>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="email">Email <span class="text-muted small">(optional)</span></label>
+            <input class="form-control" type="email" id="email" th:field="*{email}" th:errorclass="is-invalid">
+            <div class="invalid-feedback" th:errors="*{email}"></div>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-label" for="city">City <span class="text-muted small">(optional)</span></label>
+            <input class="form-control" id="city" th:field="*{city}">
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="specialRequests">Special requests <span class="text-muted small">(optional)</span></label>
+            <textarea class="form-control" rows="2" id="specialRequests" th:field="*{specialRequests}"></textarea>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

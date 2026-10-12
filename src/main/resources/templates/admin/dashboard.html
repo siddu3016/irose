@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('Dashboard')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+            <div>
+                <h1 class="h3 mb-0">Dashboard</h1>
+                <div class="text-muted small" th:text="${#temporals.format(#temporals.createToday(), 'EEEE, dd MMMM yyyy')}"></div>
+            </div>
+            <a class="btn btn-olive" th:href="@{/admin/bookings/new}"><i class="bi bi-plus-lg"></i> New booking</a>
+        </div>
+        <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-2"><div class="card stat-card border-0 shadow-sm p-3">
+                <div class="small text-muted">Total rooms</div><div class="value" th:text="${totalRooms}"></div></div></div>
+            <div class="col-6 col-xl-2"><div class="card stat-card border-0 shadow-sm p-3">
+                <div class="small text-muted">Available</div><div class="value text-success" th:text="${available}"></div></div></div>
+            <div class="col-6 col-xl-2"><div class="card stat-card border-0 shadow-sm p-3">
+                <div class="small text-muted">Occupied</div><div class="value text-danger" th:text="${occupied}"></div></div></div>
+            <div class="col-6 col-xl-2"><div class="card stat-card border-0 shadow-sm p-3">
+                <div class="small text-muted">Cleaning / Maint.</div><div class="value text-warning" th:text="${cleaning} + ' / ' + ${maintenance}"></div></div></div>
+            <div class="col-6 col-xl-2"><div class="card stat-card border-0 shadow-sm p-3">
+                <div class="small text-muted">Revenue today</div><div class="value" th:text="'₹' + ${#numbers.formatDecimal(revenueToday, 1, 'COMMA', 0, 'POINT')}"></div></div></div>
+            <div class="col-6 col-xl-2"><div class="card stat-card border-0 shadow-sm p-3">
+                <div class="small text-muted">This month</div><div class="value" th:text="'₹' + ${#numbers.formatDecimal(revenueMonth, 1, 'COMMA', 0, 'POINT')}"></div></div></div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white fw-semibold">
+                        <i class="bi bi-hourglass-split text-warning"></i> New requests awaiting confirmation
+                        <span class="badge text-bg-warning" th:text="${#lists.size(pending)}"></span>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <a class="list-group-item list-group-item-action" th:each="b : ${pending}" th:href="@{/admin/bookings/{id}(id=${b.id})}">
+                            <div class="d-flex justify-content-between">
+                                <strong th:text="${b.guest.fullName}"></strong>
+                                <span class="small" th:text="${b.guest.phone}"></span>
+                            </div>
+                            <div class="small text-muted" th:text="${b.roomType.name} + ' · ' + ${#temporals.format(b.checkInDate, 'dd MMM')} + ' → ' + ${#temporals.format(b.checkOutDate, 'dd MMM')}"></div>
+                        </a>
+                        <div class="list-group-item text-muted small" th:if="${#lists.isEmpty(pending)}">No pending requests.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-white fw-semibold"><i class="bi bi-box-arrow-in-right text-success"></i> Today's arrivals</div>
+                    <div class="list-group list-group-flush">
+                        <a class="list-group-item list-group-item-action d-flex justify-content-between" th:each="b : ${arrivals}" th:href="@{/admin/bookings/{id}(id=${b.id})}">
+                            <span><strong th:text="${b.guest.fullName}"></strong> <span class="small text-muted" th:text="${b.roomType.name}"></span></span>
+                            <span th:replace="~{fragments/layout :: statusBadge(${b.status})}"></span>
+                        </a>
+                        <div class="list-group-item text-muted small" th:if="${#lists.isEmpty(arrivals)}">No arrivals today.</div>
+                    </div>
+                    <div class="card-header bg-white fw-semibold border-top"><i class="bi bi-box-arrow-right text-danger"></i> Today's departures</div>
+                    <div class="list-group list-group-flush">
+                        <a class="list-group-item list-group-item-action d-flex justify-content-between" th:each="b : ${departures}" th:href="@{/admin/bookings/{id}(id=${b.id})}">
+                            <span><strong th:text="${b.guest.fullName}"></strong></span>
+                            <span class="small" th:text="'Room ' + ${b.room?.roomNumber}"></span>
+                        </a>
+                        <div class="list-group-item text-muted small" th:if="${#lists.isEmpty(departures)}">No departures today.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-semibold d-flex justify-content-between flex-wrap gap-2">
+                        <span><i class="bi bi-grid-3x3-gap"></i> Room board</span>
+                        <span class="small fw-normal">
+                            <span class="badge st-AVAILABLE">Available</span> <span class="badge st-OCCUPIED">Occupied</span>
+                            <span class="badge st-CLEANING">Cleaning</span> <span class="badge st-MAINTENANCE">Maintenance</span>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-4 col-sm-3 col-md-2" th:each="r : ${rooms}">
+                                <div class="room-tile" th:classappend="'st-' + ${r.status.name()}">
+                                    <div class="num" th:text="${r.roomNumber}"></div>
+                                    <div class="small" th:text="${r.roomType.name}"></div>
+                                    <form th:if="${r.status.name() == 'CLEANING'}" th:action="@{/admin/rooms/{id}/status(id=${r.id})}" method="post" class="mt-1">
+                                        <input type="hidden" name="status" value="AVAILABLE">
+                                        <input type="hidden" name="back" value="/admin">
+                                        <button class="btn btn-light btn-sm py-0" type="submit">Mark clean</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white fw-semibold"><i class="bi bi-house-door"></i> In-house guests</div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light"><tr><th>Room</th><th>Guest</th><th>Phone</th><th>Check-out</th><th></th></tr></thead>
+                            <tbody>
+                            <tr th:each="b : ${inHouse}">
+                                <td class="fw-semibold" th:text="${b.room?.roomNumber}"></td>
+                                <td th:text="${b.guest.fullName}"></td>
+                                <td th:text="${b.guest.phone}"></td>
+                                <td th:text="${#temporals.format(b.checkOutDate, 'dd MMM yyyy')}"></td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-olive" th:href="@{/admin/bookings/{id}(id=${b.id})}">Open</a></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(inHouse)}"><td colspan="5" class="text-muted small">No guests in house.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><th:block th:replace="~{fragments/layout :: head('New Booking')}"></th:block></head>
+<body>
+<div class="admin-wrap">
+    <aside th:replace="~{fragments/layout :: adminSidebar}"></aside>
+    <main class="admin-main" style="max-width:860px">
+        <h1 class="h3 mb-3">New booking</h1>
+        <th:block th:replace="~{fragments/layout :: flash}"></th:block>
+        <form th:action="@{/admin/bookings/new}" th:object="${bookingForm}" method="post" class="card card-body border-0 shadow-sm p-4">
+            <div class="mb-3">
+                <label class="form-label" for="source">Booking source</label>
+                <select class="form-select" id="source" th:field="*{source}">
+                    <option th:each="s : ${sources}" th:value="${s}" th:text="${#strings.replace(s.name(), '_', ' ')}"></option>
+                </select>
+            </div>
+            <th:block th:replace="~{fragments/booking-fields :: fields}"></th:block>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-olive" type="submit">Create booking</button>
+                <a class="btn btn-outline-secondary" th:href="@{/admin/bookings}">Cancel</a>
+            </div>
+        </form>
+    </main>
+</div>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
