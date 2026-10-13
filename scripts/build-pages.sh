@@ -7,7 +7,7 @@ set -euo pipefail
 BASE="${BASE_URL:-http://localhost:8080}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/docs"
-WHATSAPP="https://wa.me/916363163758?text=Hi%2C%20I%20would%20like%20to%20book%20a%20room%20at%20iRose%20Olive%20Business%20Hotel."
+WHATSAPP="https://wa.me/918374661394?text=Hi%2C%20I%20would%20like%20to%20book%20a%20room%20at%20iRose%20Olive%20Business%20Hotel."
 
 rm -rf "$OUT"
 mkdir -p "$OUT/css"

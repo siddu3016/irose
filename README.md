@@ -8,7 +8,7 @@ Spring Boot 3 (Java 17) web application with a public hotel website and a front-
 - Home page: hero, about, rooms, amenities, gallery, contact with map
 - Live room availability search by dates
 - Online booking request form, which gives the guest a booking reference
-- Click-to-call and WhatsApp buttons (6363163758)
+- Click-to-call and WhatsApp buttons (8374661394)
 
 **Admin panel** (`http://localhost:8080/admin`)
 - Dashboard: room counts, today's arrivals and departures, pending requests, in-house guests, revenue, colour-coded room board
